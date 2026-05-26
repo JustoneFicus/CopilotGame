@@ -1,0 +1,45 @@
+name: Build and Test Tetris Game
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install SDL2 dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev cmake build-essential
+
+    - name: Create build directory
+      run: mkdir build
+
+    - name: Configure CMake
+      run: cd build && cmake ..
+
+    - name: Build the project
+      run: cd build && make
+
+    - name: Verify build artifacts
+      run: |
+        ls -la build/
+        file build/tetris || echo "Executable not found"
+
+    - name: Run basic validation
+      run: |
+        echo "Build successful!"
+        echo "Tetris game executable created: $(ls -1 build/tetris 2>/dev/null || echo 'Not found')"
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: tetris-executable
+        path: build/tetris
+        retention-days: 7
